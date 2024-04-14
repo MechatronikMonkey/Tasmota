@@ -1246,4 +1246,9 @@
 #define D_SENSOR_PIPSOLAR_TX             "Pipsolar TX"
 #define D_SENSOR_PIPSOLAR_RX             "Pipsolar RX"
 
+// X9Cxxx by Chris
+#define D_GPIO_X9Cxxx_UD "X9Cxxx UD" 
+#define D_GPIO_X9Cxxx_INC "X9Cxxx INC" 
+#define D_GPIO_X9Cxxx_CS "X9Cxxx CS"
+
 #endif  // _LANGUAGE_AF_AF_H_
