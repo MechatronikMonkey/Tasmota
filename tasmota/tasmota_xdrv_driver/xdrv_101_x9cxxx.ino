@@ -31,10 +31,11 @@ bool initSuccess = false;
 
 const char X9CxxxCommands[] PROGMEM = "|"  // No Prefix
   "INC|" 
-  "DEC|";
+  "DEC|"
+  "STR";
 
 void (* const X9CxxxCommand[])(void) PROGMEM = {
-  &CmdINC, &CmdDEC};
+  &CmdINC, &CmdDEC, &CmdSTR};
 
 void moveWiper(int direction) {
 
@@ -58,40 +59,62 @@ void moveWiper(int direction) {
   {
     // Begin with command by bringing down CS
     digitalWrite(X9cxxx.pin_cs, LOW);
-    delayMicroseconds(5);
+    delayMicroseconds(6);
 
     // Count upwards set UD = HIGH
     digitalWrite(X9cxxx.pin_ud, direction);
-    delayMicroseconds(5);
+    delayMicroseconds(6);
 
     // Count numbers
     for (int i=0; i<count; i++)
     {
       digitalWrite(X9cxxx.pin_inc, LOW);
-      delayMicroseconds(5); 
+      delayMicroseconds(6); 
       digitalWrite(X9cxxx.pin_inc, HIGH);
-      delayMicroseconds(5); 
+      delayMicroseconds(6); 
     }
+    
+    // Bring INC LOW again before deselect CS, because we want not save to volatile mem yet!
+    digitalWrite(X9cxxx.pin_inc, LOW);
+    delayMicroseconds(6); 
 
     // End with command by bringing up CS
     digitalWrite(X9cxxx.pin_cs, HIGH);
 
+    // Bring INC HIGH again in neutral pos. after deselect (no change of whiper anymore)
+    digitalWrite(X9cxxx.pin_inc, HIGH);
+
     // Tell Tasmota that this command was successfull.
-    ResponseCmndDone();
+    Response_P(PSTR("{\"%s\":\"%i\"}"), XdrvMailbox.command, count);
   }
-  
   // End of Command INC
 }
 
 void CmdINC(void) {
 
-  moveWiper(1);
+  moveWiper(HIGH);
 }
 
 
 void CmdDEC(void) {
 
-  moveWiper(0);
+  moveWiper(LOW);
+}
+
+void CmdSTR(void) {
+
+  // Begin with command by bringing down CS
+  digitalWrite(X9cxxx.pin_cs, LOW);
+
+  delayMicroseconds(15);
+
+  // Now bring CS up to begin writing to mem.
+  digitalWrite(X9cxxx.pin_cs, HIGH);
+
+  // Wait 20 ms to finish writing to mem.
+  delay(20);
+
+  Response_P(PSTR("{\"%s\":\"ok\"}"), XdrvMailbox.command);
 }
 
 
