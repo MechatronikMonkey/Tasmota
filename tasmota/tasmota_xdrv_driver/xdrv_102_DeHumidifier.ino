@@ -70,7 +70,7 @@ void CmdFAN(void) {
       digitalWrite(DeHum.pin_fanh, LOW);
       delay(5);
       digitalWrite(DeHum.pin_fanl, HIGH);
-      FanTrailingTimer = 6; // Set trailing timer for fan to 60 seconds.
+      FanTrailingTimer = 60; // Set trailing timer for fan to 60 seconds.
       FAN_SPEED = 1;
       FAN_ON = true;
 
@@ -110,11 +110,46 @@ void CmdFAN(void) {
 
 void CmdCOMP(void) {
 
-  int MyADCValue = AdcRead(0, 1);
+int comp = 0;
 
-  Response_P(PSTR("COMP{\"%i\"}"), MyADCValue);
+  if (XdrvMailbox.data_len > 0) {
+  
+    comp = (int)(CharToFloat(XdrvMailbox.data));
+  }
+  else
+  {
+    ResponseCmndChar(PSTR("Error. Enter Compressor state! COMP 1 for on, COMP 0 for off."));
+  }
+  
+  if (comp > 1 || comp < 0)
+  {
+    // Count out of range
+    ResponseCmndChar(PSTR("Error. Out of range, only 0-1!"));
+  }
+  else
+  {
+    if (comp == 1)
+    {
+      // Set Fan to low level
+      digitalWrite(DeHum.pin_fanh, LOW);
+      delay(5);
+      digitalWrite(DeHum.pin_fanl, HIGH);
+      FAN_ON = true;
+      FAN_SPEED = 1;
 
-  digitalWrite(DeHum.pin_comp, HIGH);
+      // Set Compressor to ON
+      digitalWrite(DeHum.pin_comp, HIGH);
+      COMP_ON = true;
+      ResponseCmndChar(PSTR("Compressor ON."));
+    }
+    else
+    {
+      // Set Compressor to OFF
+      digitalWrite(DeHum.pin_comp, LOW);
+      COMP_ON = false;
+      ResponseCmndChar(PSTR("Compressor OFF."));
+    }
+  }
 }
 
 
