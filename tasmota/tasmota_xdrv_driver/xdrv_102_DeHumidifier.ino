@@ -140,14 +140,14 @@ int comp = 0;
       // Set Compressor to ON
       digitalWrite(DeHum.pin_comp, HIGH);
       COMP_ON = true;
-      ResponseCmndChar(PSTR("Compressor ON."));
+      Response_P(PSTR("Compressor ON."));
     }
     else
     {
       // Set Compressor to OFF
       digitalWrite(DeHum.pin_comp, LOW);
       COMP_ON = false;
-      ResponseCmndChar(PSTR("Compressor OFF."));
+      Response_P(PSTR("Compressor OFF."));
     }
   }
 }
