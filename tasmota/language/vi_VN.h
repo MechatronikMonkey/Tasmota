@@ -1251,4 +1251,10 @@
 #define D_GPIO_X9Cxxx_INC "X9Cxxx INC" 
 #define D_GPIO_X9Cxxx_CS "X9Cxxx CS"
 
+// Dehumidifier by Chris
+#define D_GPIO_HUM_ADC "Hum Water ADC"
+#define D_GPIO_HUM_COMP "Hum Compressor"
+#define D_GPIO_HUM_FANH "Hum Fan High" 
+#define D_GPIO_HUM_FANL "Hum Fan Low"
+
 #endif  // _LANGUAGE_VI_VN_H_

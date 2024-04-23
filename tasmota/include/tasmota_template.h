@@ -220,6 +220,7 @@ enum UserSelectablePins {
   GPIO_TS_SPI_CS, GPIO_TS_RST, GPIO_TS_IRQ, // SPI for Universal Touch Screen
   GPIO_RN2XX3_TX, GPIO_RN2XX3_RX, GPIO_RN2XX3_RST,  // RN2XX3 LoRaWan node Serial interface
   GPIO_X9Cxxx_UD, GPIO_X9Cxxx_INC, GPIO_X9Cxxx_CS,  // X9Cxxx digital potentiometer
+  GPIO_HUM_COMP, GPIO_HUM_FANH, GPIO_HUM_FANL, // Dehumidifier driver by Chris
   GPIO_SENSOR_END };
 
 // Error as warning to rethink GPIO usage with max 2045
@@ -487,6 +488,7 @@ const char kSensorNames[] PROGMEM =
   D_GPIO_TS_SPI_CS "|" D_GPIO_TS_RST "|" D_GPIO_TS_IRQ "|"
   D_GPIO_RN2XX3_TX "|" D_GPIO_RN2XX3_RX "|" D_GPIO_RN2XX3_RST "|"
   D_GPIO_X9Cxxx_UD "|" D_GPIO_X9Cxxx_INC "|" D_GPIO_X9Cxxx_CS "|"
+  D_GPIO_HUM_COMP "|" D_GPIO_HUM_FANH "|" D_GPIO_HUM_FANL "|" // Dehumidifier driver by Chris
   ;
 
 const char kSensorNamesFixed[] PROGMEM =
@@ -1190,6 +1192,13 @@ const uint16_t kGpioNiceList[] PROGMEM = {
   AGPIO(GPIO_X9Cxxx_UD),
   AGPIO(GPIO_X9Cxxx_INC),
   AGPIO(GPIO_X9Cxxx_CS),
+#endif
+
+#ifdef USE_DeHum    
+// X9Cxxx digital potentiometer
+  AGPIO(GPIO_HUM_COMP),
+  AGPIO(GPIO_HUM_FANH),
+  AGPIO(GPIO_HUM_FANL),
 #endif
 /*-------------------------------------------------------------------------------------------*\
  * ESP32 specifics
