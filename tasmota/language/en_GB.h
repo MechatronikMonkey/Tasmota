@@ -1257,5 +1257,6 @@
 #define D_GPIO_HUM_COMP "Hum Compressor"
 #define D_GPIO_HUM_FANH "Hum Fan High" 
 #define D_GPIO_HUM_FANL "Hum Fan Low"
+#define D_GPIO_HUM_SENS "Water Sensor"
 
 #endif  // _LANGUAGE_EN_GB_H_
