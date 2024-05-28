@@ -15,7 +15,7 @@
 #define D_LOG_DeHum       "DeHum: "
 
 struct DeHum {
-  int8_t pin_adc = 0;
+  int8_t pin_water = 0;
   int8_t pin_comp = 0;
   int8_t pin_fanh = 0;
   int8_t pin_fanl = 0;
@@ -27,6 +27,7 @@ int FAN_SPEED = 0;
 bool COMP_ON = false;
 int minOffTimer = 0;
 int FanTrailingTimer = 0;
+int water_full = 0;
 
 /*********************************************************************************************\
  * Dehumidifier Functions
@@ -42,6 +43,20 @@ const char DeHumCommands[] PROGMEM = "|"  // No Prefix
 
 void (* const DeHumCommand[])(void) PROGMEM = {
   &CmdFAN, &CmdCOMP};
+
+void SetCompressor_OFF(int fan_trail_time)
+{
+  // Set Fan to low level and set trailing run.
+  digitalWrite(DeHum.pin_fanh, LOW);
+  delay(5);
+  digitalWrite(DeHum.pin_fanl, HIGH);
+  FanTrailingTimer = fan_trail_time; // Set trailing timer for fan to 60 seconds.
+  FAN_SPEED = 1;
+  FAN_ON = true;
+
+  digitalWrite(DeHum.pin_comp, LOW);
+  COMP_ON = false;
+}
 
 void CmdFAN(void) {
 
@@ -66,16 +81,9 @@ void CmdFAN(void) {
     switch (fan_speed)
     {
     case 0: 
-      // Set Fan to low level and set trailing run.
-      digitalWrite(DeHum.pin_fanh, LOW);
-      delay(5);
-      digitalWrite(DeHum.pin_fanl, HIGH);
-      FanTrailingTimer = 60; // Set trailing timer for fan to 60 seconds.
-      FAN_SPEED = 1;
-      FAN_ON = true;
-
-      digitalWrite(DeHum.pin_comp, LOW);
-      COMP_ON = false;
+      // For switching off fan, the compressor needs to shut down.
+      // Triger Compressor Shutdown
+      SetCompressor_OFF(60);
 
       Response_P(PSTR("Compressor OFF. FAN set to low... trailing time set to 60 seconds."));
 
@@ -144,9 +152,8 @@ int comp = 0;
     }
     else
     {
-      // Set Compressor to OFF
-      digitalWrite(DeHum.pin_comp, LOW);
-      COMP_ON = false;
+      // Trigger Compressor shutdown with 60 seconds trailing time
+      SetCompressor_OFF(60);
       Response_P(PSTR("Compressor OFF."));
     }
   }
@@ -166,6 +173,7 @@ void DeHumInit()
   DeHum.pin_comp = Pin(GPIO_HUM_COMP);
   DeHum.pin_fanh = Pin(GPIO_HUM_FANH);
   DeHum.pin_fanl = Pin(GPIO_HUM_FANL);
+  DeHum.pin_water = Pin(GPIO_HUM_SENS);
 
   // init pins
   pinMode(DeHum.pin_comp, OUTPUT);
@@ -177,6 +185,8 @@ void DeHumInit()
   pinMode(DeHum.pin_fanl, OUTPUT);
   digitalWrite(DeHum.pin_fanl, LOW);
 
+  pinMode(DeHum.pin_water, INPUT);
+
   // Init is successful
   DeHumInitSuccess = true;
 
@@ -186,6 +196,8 @@ void DeHumInit()
 
 void DeHumProcessing(void)
 {
+  water_full = digitalRead(DeHum.pin_water);
+
   // is the compressor running and the fan off?
   if (COMP_ON == true && FAN_ON == false)
   { 
@@ -198,6 +210,15 @@ void DeHumProcessing(void)
     Response_P(PSTR("FAN set to low because compressor cannot run without fan."));
   }
 
+  // Is the compressor running and whater full?
+  if (water_full <= 0 && COMP_ON)
+  {
+
+    SetCompressor_OFF(90);
+    Response_P(PSTR("Water full! Stopped operation."));
+
+  }
+
 }
 
 
@@ -205,6 +226,7 @@ void DeHumShow(void)
 {
   ResponseAppend_P(PSTR("{\"FAN_SPEED\": %i}"), FAN_SPEED);
   ResponseAppend_P(PSTR("{\"COMPRESSOR\": %i"), COMP_ON);
+  ResponseAppend_P(PSTR("{\"WATER\": %i"), water_full);
   ResponseJsonEnd();
 }
 
